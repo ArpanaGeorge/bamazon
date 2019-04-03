@@ -1,8 +1,47 @@
 var mysql = require('mysql');
 var inquirer = require('inquirer');
+//importing cli-table to render tables on the command line from node.js scripts.
 var Table = require('cli-table');
 var connection = require('./connect.js');
 
+//Establishing connection to mysql db and calling function promptAction()
+connection.connect(function(error) {
+  if (error) throw error;
+  console.log('Connected as id: ' + connection.threadId);
+  promptAction();
+});
+
+//Using inquirer asking the customers to select what action you would like to complete
+function promptAction() {
+  inquirer.prompt([{
+    type: 'list',
+    message: 'Select from list below what action you would like to complete.',
+    choices: ['View Products for Sale', 'View Low Inventory', 'Add to Inventory', 'Add New Product'],
+    name: "action"
+  }, ]).then(function(selection) {
+    switch (selection.action) {
+      case 'View Products for Sale':
+        viewAllProducts();
+        break;
+
+      case 'View Low Inventory':
+        lowInventoryList();
+        break;
+
+      case 'Add to Inventory':
+        addInventory();
+        break;
+
+      case 'Add New Product':
+        addNewProduct();
+        break;
+    }
+  }).catch(function(error) {
+    throw error;
+  });
+};
+
+//Selecting all the records from product table using Select query and rendering it as table on command line using cli-table
 function viewAllProducts() {
   connection.query('SELECT * FROM products', function(error, res) {
     if (error) throw error;
@@ -20,6 +59,7 @@ function viewAllProducts() {
   });
 };
 
+//Selecting all the low inventory records from product table using Select query with condition stock_quantity < 5 and rendering it as table on command line using cli-table
 function lowInventoryList() {
   connection.query("SELECT item_id, product_name, stock_quantity FROM products  WHERE stock_quantity < 5", function(error, res) {
     if (error) throw error;
@@ -36,6 +76,43 @@ function lowInventoryList() {
   });
 };
 
+//Using select query selecting all the records from product table
+function addInventory() {
+  var sqlQuery = 'SELECT * FROM products';
+  connection.query(sqlQuery, function(error, data) {
+    if (error) throw error;
+    selectAddInventory(data);
+  });
+};
+
+//Using inquirer asking to 'Select item where you would like to add more stock' 
+function selectAddInventory(data) {
+  inquirer.prompt([{
+    type: 'list',
+    message: 'Select item where you would like to add more stock.\n',
+    choices: function() {
+      var choiceArr = [];
+      for (i = 0; i < data.length; i++) {
+        choiceArr.push(data[i].item_id + " : " + data[i].product_name + " : " + data[i].stock_quantity);
+      }
+      return choiceArr;
+    },
+    name: 'itemList',
+  }, ]).then(function(input) {
+    var idArr = input.itemList.split(" : ");
+    var selectedItem;
+    for (i = 0; i < data.length; i++) {
+      if (parseInt(idArr[0]) === parseInt(data[i].item_id)) {
+        selectedItem = data[i];
+      }
+    }
+    completeAddInventory(selectedItem);
+  }).catch(function(error) {
+    throw error;
+  });
+};
+
+//Using inquirer asking to 'Specify amount of stock to add' and using update query updating stock_quantity for that item in product table
 function completeAddInventory(item) {
   inquirer.prompt([{
     type: 'input',
@@ -64,41 +141,7 @@ function completeAddInventory(item) {
   });
 };
 
-function selectAddInventory(data) {
-  inquirer.prompt([{
-    type: 'list',
-    message: 'Select item where you would like to add more stock.\n',
-    choices: function() {
-      var choiceArr = [];
-      for (i = 0; i < data.length; i++) {
-        choiceArr.push(data[i].item_id + " : " + data[i].product_name + " : " + data[i].stock_quantity);
-      }
-      return choiceArr;
-    },
-    name: 'itemList',
-  }, ]).then(function(input) {
-    var idArr = input.itemList.split(" : ");
-    var selectedItem;
-    for (i = 0; i < data.length; i++) {
-      if (parseInt(idArr[0]) === parseInt(data[i].item_id)) {
-        selectedItem = data[i];
-      }
-    }
-    completeAddInventory(selectedItem);
-  }).catch(function(error) {
-    throw error;
-  });
-};
-
-function addInventory() {
-  var sqlQuery = 'SELECT * FROM products';
-  connection.query(sqlQuery, function(error, data) {
-    if (error) throw error;
-    selectAddInventory(data);
-  });
-};
-
-
+//Using inquirer asking to 'Specify name,department,price,stock quantity' and using insert query inserting new item as new record into product table
 function addNewProduct() {
   inquirer.prompt([{
     type: 'input',
@@ -146,38 +189,3 @@ function addNewProduct() {
   });
 });
 };
-
-function promptAction() {
-  inquirer.prompt([{
-    type: 'list',
-    message: 'Select from list below what action you would like to complete.',
-    choices: ['View Products for Sale', 'View Low Inventory', 'Add to Inventory', 'Add New Product'],
-    name: "action"
-  }, ]).then(function(selection) {
-    switch (selection.action) {
-      case 'View Products for Sale':
-        viewAllProducts();
-        break;
-
-      case 'View Low Inventory':
-        lowInventoryList();
-        break;
-
-      case 'Add to Inventory':
-        addInventory();
-        break;
-
-      case 'Add New Product':
-        addNewProduct();
-        break;
-    }
-  }).catch(function(error) {
-    throw error;
-  });
-};
-
-connection.connect(function(error) {
-  if (error) throw error;
-  console.log('Connected as id: ' + connection.threadId);
-  promptAction();
-});

@@ -116,7 +116,7 @@ function completeOrder(item, amount) {
   });
 };
 
-//using inquirer asking if customer wamnts to continue shopping
+//using inquirer asking if customer wants to continue shopping
 function continueShopping() {
   inquirer.prompt([{
     type: 'confirm',
