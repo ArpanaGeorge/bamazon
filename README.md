@@ -49,11 +49,11 @@ database: 'bamazon'<br>
 
 ### `View Low inventory`
 ### Screenshot
-![GitHub Logo](view-low-inventory.PNG)
+![GitHub Logo](low-inventory.PNG)
 
 
 ### **GIF**
-![](low-inventory.gif)
+![](view-low-inventory.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
