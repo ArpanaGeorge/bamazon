@@ -5,21 +5,80 @@ var inquirer = require('inquirer');
 //importing js file connect.js to establish connection to database
 var connection = require('./connect.js');
 
-function continueShopping() {
+//Establishing connection to mysql db and calling function getProductList()
+connection.connect(function(error) {
+  if (error) throw error;
+  console.log('Connected as id: ' + connection.threadId);
+  getProductList();
+});
+
+//Selecting all the records from products table and calling function queryCustomer(data) 
+function getProductList() {
+  var sqlQuery = 'SELECT * FROM products';
+  connection.query(sqlQuery, function(error, data) {
+    if (error) throw error;
+    queryCustomer(data);
+  })
+};
+
+//Using inquirer asking the customers to select the item to order
+function queryCustomer(data) {
   inquirer.prompt([{
-    type: 'confirm',
-    message: '\nWould you like to place another order?\n',
-    name: 'continue'
-  }, ]).then(function(value) {
-    if (value.continue !== true) {
-      return connection.end();
+    type: 'list',
+    message: 'Select item you would like to order from list below\n',
+    choices: function() {
+      var choiceArr = [];
+      for (i = 0; i < data.length; i++) {
+        choiceArr.push(data[i].item_id + " : " + data[i].department_name + " : " + data[i].product_name);
+      }
+      return choiceArr;
+    },
+    name: 'itemList',
+  }, ]).then(function(input) {
+    var idArr = input.itemList.split(" : ");
+    var selectedItem;
+    for (i = 0; i < data.length; i++) {
+      if (parseInt(idArr[0]) === parseInt(data[i].item_id)) {
+        selectedItem = data[i];
+      }
     }
-    return getProductList();
+    itemTypeMessage(selectedItem);
   }).catch(function(error) {
     throw error;
   });
 };
 
+//function asking the customer to enter the number of items that they want to order
+function itemTypeMessage(item) {
+  var question = 'How many units of ' + item.product_name + ' would you like to order?';;
+  promptQuantity(item, question);
+};
+
+//checking if ordered quantity is less than available stock quantity
+function promptQuantity(item, question) {
+  inquirer.prompt([{
+    type: 'input',
+    message: question,
+    name: 'amount',
+    validate: function(value) {
+      if (isNaN(value) === false) {
+        if (value <= item.stock_quantity) {
+          return true;
+        }
+        console.log('\nSorry. There is not enough ' + item.product_name + ' to fulfill your order.\n' +
+          'Change order to ' + item.stock_quantity + ' or less... \n');
+        return false;
+      }
+      return false;
+    },
+  }, ]).then(function(response) {
+    completeOrder(item, response.amount);
+  }).catch(function(error) {
+    throw error;
+  });
+};
+
+//using inquirer confirming if customer wants to order the item and calculating the total price for ordered items and remaining stock
 function completeOrder(item, amount) {
   var netCost = parseFloat(item.price) * parseInt(amount);
   var totalCost = parseFloat(netCost + (netCost * 0.07)).toFixed(2);
@@ -57,80 +116,29 @@ function completeOrder(item, amount) {
   });
 };
 
-function promptQuantity(item, question) {
+//using inquirer asking if customer wamnts to continue shopping
+function continueShopping() {
   inquirer.prompt([{
-    type: 'input',
-    message: question,
-    name: 'amount',
-    validate: function(value) {
-      if (isNaN(value) === false) {
-        if (value <= item.stock_quantity) {
-          return true;
-        }
-        console.log('\nSorry. There is not enough ' + item.product_name + ' to fulfill your order.\n' +
-          'Change order to ' + item.stock_quantity + ' or less... \n');
-        return false;
-      }
-      return false;
-    },
-  }, ]).then(function(response) {
-    completeOrder(item, response.amount);
-  }).catch(function(error) {
-    throw error;
-  });
-};
-
-function itemTypeMessage(item) {
-  var question;
-  switch (item.department_name) {
-    case 'Grain':
-      question = 'How many pounds of ' + item.product_name + ' would you like to order?';
-      break;
-    case 'Hops':
-      question = 'How many ounces of ' + item.product_name + ' would you like to order?';
-      break;
-    default:
-      question = 'How many units of ' + item.product_name + ' would you like to order?';
-  };
-  promptQuantity(item, question);
-};
-
-function queryCustomer(data) {
-  inquirer.prompt([{
-    type: 'list',
-    message: 'Select item you would like to order from list below\n',
-    choices: function() {
-      var choiceArr = [];
-      for (i = 0; i < data.length; i++) {
-        choiceArr.push(data[i].item_id + " : " + data[i].department_name + " : " + data[i].product_name);
-      }
-      return choiceArr;
-    },
-    name: 'itemList',
-  }, ]).then(function(input) {
-    var idArr = input.itemList.split(" : ");
-    var selectedItem;
-    for (i = 0; i < data.length; i++) {
-      if (parseInt(idArr[0]) === parseInt(data[i].item_id)) {
-        selectedItem = data[i];
-      }
+    type: 'confirm',
+    message: '\nWould you like to place another order?\n',
+    name: 'continue'
+  }, ]).then(function(value) {
+    //if no, ending the connection
+    if (value.continue !== true) {
+      console.log("Have a nice day. Hope you will shop again!!")
+      return connection.end();
     }
-    itemTypeMessage(selectedItem);
+    //if yes, calling initial function getProductList
+    return getProductList();
   }).catch(function(error) {
     throw error;
   });
 };
 
-function getProductList() {
-  var sqlQuery = 'SELECT * FROM products';
-  connection.query(sqlQuery, function(error, data) {
-    if (error) throw error;
-    queryCustomer(data);
-  })
-};
 
-connection.connect(function(error) {
-  if (error) throw error;
-  console.log('Connected as id: ' + connection.threadId);
-  getProductList();
-});
+
+
+
+
+
+
