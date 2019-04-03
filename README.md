@@ -11,68 +11,68 @@ In the bamazon manager module, you select from a list of actions including 'View
 ## Setup
 To run the Bamazon app, clone the repository and set up a locally hosted mysql database.
 
-Install Node Modules: npm install
-Use the bamazon-schema.sql to create the database and tables in mysql.
-Use the bamazon-seeds.sql to insert the data into the products table.
-Add password and if necessary change host, port or user values in connect.js file.
-var connection = mysql.createConnection({
-host: 'localhost',
-port: 3306,
-user: 'root',
-password: '**Password**',
-database: 'bamazon'
+Install Node Modules: npm install<br>
+Use the bamazon-schema.sql to create the database and tables in mysql.<br>
+Use the bamazon-seeds.sql to insert the data into the products table.<br>
+Add password and if necessary change host, port or user values in connect.js file.<br>
+var connection = mysql.createConnection({<br>
+host: 'localhost',<br>
+port: 3306,<br>
+user: 'root',<br>
+password: '**Password**',<br>
+database: 'bamazon'<br>
 });
 
 ## **Attaching screenshot and GIF demonstarating the functioning:**
 
-### **bamazonCustomer**
-## Screenshot
+### `bamazonCustomer`
+### Screenshot
 ![GitHub Logo](amazon-customer.PNG)
 
 
-## **GIF**
+### **GIF**
 ![](amazon-customer.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### **bamazonManager**
+### `bamazonManager`
 
-### **View products for sale**
-## Screenshot
+### `View products for sale`
+### Screenshot
 ![GitHub Logo](view-products-manager.PNG)
 
 
-## **GIF**
+### **GIF**
 ![](view-products-manager.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### **View Low inventory**
-## Screenshot
+### `View Low inventory`
+### Screenshot
 ![GitHub Logo](view-low-inventory.PNG)
 
 
-## **GIF**
-![](view-low-inventory.gif)
+### **GIF**
+![](low-inventory.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### **Add to inventory**
-## Screenshot
+### `Add to inventory`
+### Screenshot
 ![GitHub Logo](add-to-inventory.PNG)
 
 
-## **GIF**
+### GIF
 ![](add-to-inventory.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### **Add New Product**
-## Screenshot
+### `Add New Product`
+### Screenshot
 ![GitHub Logo](add-new-product.PNG)
 
 
-## **GIF**
+### **GIF**
 ![](add-new-product.gif)
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
